@@ -202,6 +202,16 @@ typedef enum apiCall {
 ////////////////////////////////////////////////////////////////////////////////
 
 
+
+/**
+ * Check if the facebook app is installed on the device.
+ */
+- (BOOL)isFacebookAppInstalled {
+    return [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"fb://"]];
+}
+
+
+
 /**
  * There is no need to call login if you only want to share stuff.
  * It is enough to make a call to facebookPublish: !

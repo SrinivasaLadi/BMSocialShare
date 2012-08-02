@@ -52,6 +52,7 @@
 - (BOOL)facebookHandleOpenURL:(NSURL *)url;
 - (void)facebookPublish:(BMFacebookPost *)post;
 - (void)facebookExtendAccessToken;
+- (BOOL)isFacebookAppInstalled;
 
 
 /* Twitter */
