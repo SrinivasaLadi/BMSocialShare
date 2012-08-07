@@ -92,17 +92,28 @@ typedef enum apiCall {
                 NSArray *bundleURLSchemesArray = [bundleURLTypesDictionary objectForKey:@"CFBundleURLSchemes"];
                 if (bundleURLSchemesArray) {
                     for (int bundleURLSchemesArrayItem = 0; bundleURLSchemesArrayItem < bundleURLTypesArray.count && _appId == nil; bundleURLSchemesArrayItem++) {
+
                         NSString *appIdCandidate = [bundleURLSchemesArray objectAtIndex:bundleURLSchemesArrayItem];
+                        
+                        // is this a proper facebook url scheme ?
                         NSRange range = [appIdCandidate rangeOfString:@"fb"];
                         if(range.length == 2 && range.location == 0) {
-                            _appId = [appIdCandidate substringFromIndex:2];
+                            
+                            // do we have a suffix ?
+                            NSRange fbIdRange = [appIdCandidate rangeOfCharacterFromSet:[NSCharacterSet decimalDigitCharacterSet] options:NSBackwardsSearch];
+                            if (appIdCandidate.length > fbIdRange.location+1) {
+                                NSRange suffixRange = NSMakeRange(fbIdRange.location+1, appIdCandidate.length-fbIdRange.location-1);
+                                _urlSchemeSuffix = [appIdCandidate substringWithRange:suffixRange];
+                            }
+
+                            _appId = [appIdCandidate substringWithRange:NSMakeRange(2, fbIdRange.location-1)];
+                            
                             break;
                         }
                     }
                 }
             }
         }
-        
         
         
         // Check App ID:
@@ -124,30 +135,17 @@ typedef enum apiCall {
         } else {
             
             
-            // Now check that the URL scheme fb[app_id]://authorize is in the .plist and can
-            // be opened, doing a simple check without local app id factored in here
-            NSString *url = [NSString stringWithFormat:@"fb%@://authorize",_appId];
-            BOOL bSchemeInPlist = NO; // find out if the sceme is in the plist file.
-            NSArray* aBundleURLTypes = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleURLTypes"];
-            if ([aBundleURLTypes isKindOfClass:[NSArray class]] &&
-                ([aBundleURLTypes count] > 0)) {
-                NSDictionary* aBundleURLTypes0 = [aBundleURLTypes objectAtIndex:0];
-                if ([aBundleURLTypes0 isKindOfClass:[NSDictionary class]]) {
-                    NSArray* aBundleURLSchemes = [aBundleURLTypes0 objectForKey:@"CFBundleURLSchemes"];
-                    if ([aBundleURLSchemes isKindOfClass:[NSArray class]] &&
-                        ([aBundleURLSchemes count] > 0)) {
-                        NSString *scheme = [aBundleURLSchemes objectAtIndex:0];
-                        if ([scheme isKindOfClass:[NSString class]] &&
-                            [url hasPrefix:scheme]) {
-                            bSchemeInPlist = YES;
-                        }
-                    }
-                }
+            // Check if the authorization callback will work
+            NSString *url;
+            if (_urlSchemeSuffix) {
+                url = [NSString stringWithFormat:@"fb%@%@://authorize", _appId, _urlSchemeSuffix];
+            } else {
+                url = [NSString stringWithFormat:@"fb%@://authorize", _appId];
             }
-            
+                        
             
             // Check if the authorization callback will work
-            BOOL bCanOpenUrl = [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString: url]];
+            BOOL bCanOpenUrl = [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]];
             if (!bCanOpenUrl) {
                 
                 UIAlertView *alertView = [[UIAlertView alloc]
@@ -163,7 +161,12 @@ typedef enum apiCall {
             } else {
 
                 // initialize facebook with default permissions
-                NSLog(@"BMSocialShare: Using Facebook APP ID: %@", _appId);
+                if (_urlSchemeSuffix) {
+                    NSLog(@"BMSocialShare: Using Facebook APP ID: %@ and URL scheme suffix: %@", _appId, _urlSchemeSuffix);
+                } else {
+                    NSLog(@"BMSocialShare: Using Facebook APP ID: %@", _appId);
+                }
+
                 [self facebookPermissions:[NSArray arrayWithObjects: @"publish_stream", nil]];
 
             }
@@ -279,7 +282,15 @@ typedef enum apiCall {
 - (void)facebookPermissions:(NSArray *)permissions {
     
     if (_facebook == nil && _appId != nil) {
-        _facebook = [[[Facebook alloc] initWithAppId:_appId andDelegate:self] retain];
+        
+        
+        if (_urlSchemeSuffix) {
+            _facebook = [[[Facebook alloc] initWithAppId:_appId urlSchemeSuffix:_urlSchemeSuffix andDelegate:self] retain];
+        } else {
+            _facebook = [[[Facebook alloc] initWithAppId:_appId andDelegate:self] retain];
+        }
+        
+        
         
         // try to load previous sessions
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];

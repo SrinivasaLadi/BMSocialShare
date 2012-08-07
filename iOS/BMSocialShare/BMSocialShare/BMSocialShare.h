@@ -35,6 +35,7 @@
     int _currentAPICall;
     Facebook *_facebook;
     NSString *_appId;
+    NSString *_urlSchemeSuffix;
     NSArray *_permissions;
     UIViewController *_emailParentViewController;
 }
