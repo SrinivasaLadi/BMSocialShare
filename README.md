@@ -67,7 +67,7 @@ Questions? Contact me on Twitter [@vinzenzweber](http://twitter.com/vinzenzweber
     // extend the access token
     - (void)applicationDidBecomeActive:(UIApplication *)application
     {
-        [[BMSocialShare sharedInstance] facebookExendAccessToken];
+        [[BMSocialShare sharedInstance] facebookExtendAccessToken];
     }
 ```
 1. Post to Facebook:
