@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BC3620B41566311700B8F14E /* BMSocialShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC3620B31566311700B8F14E /* BMSocialShare.framework */; };
 		BC3620B51566320B00B8F14E /* BMViewController.xib in Resources */ = {isa = PBXBuildFile; fileRef = BC8712E8146575F7007DF497 /* BMViewController.xib */; };
 		BC3620B61566322C00B8F14E /* Icon-Small-50.png in Resources */ = {isa = PBXBuildFile; fileRef = BC2AD27F156111ED00CF82F8 /* Icon-Small-50.png */; };
 		BC3620B71566322C00B8F14E /* Icon-Small.png in Resources */ = {isa = PBXBuildFile; fileRef = BC2AD280156111ED00CF82F8 /* Icon-Small.png */; };
@@ -37,6 +36,9 @@
 		BCC23B721565816100593A40 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC8712D7146575F7007DF497 /* CoreGraphics.framework */; };
 		BCC23B8B1565817E00593A40 /* Twitter.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC8712F314657698007DF497 /* Twitter.framework */; };
 		BCC23B8C1565817E00593A40 /* MessageUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BC8713031465DFAB007DF497 /* MessageUI.framework */; };
+		BCE9191715EBF184006E8934 /* BMSocialShare.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = BCE9191315EBF184006E8934 /* BMSocialShare.framework */; };
+		BCE9191815EBF184006E8934 /* BMSocialShare.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BCE9191515EBF184006E8934 /* BMSocialShare.bundle */; };
+		BCE9191915EBF184006E8934 /* FBDialog.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BCE9191615EBF184006E8934 /* FBDialog.bundle */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -52,7 +54,6 @@
 		BC2AD283156111ED00CF82F8 /* Icon@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Icon@2x.png"; sourceTree = "<group>"; };
 		BC2AD284156111ED00CF82F8 /* iTunesArtwork */ = {isa = PBXFileReference; lastKnownFileType = file; path = iTunesArtwork; sourceTree = "<group>"; };
 		BC2AD28F156113CA00CF82F8 /* Default-Portrait~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "Default-Portrait~ipad.png"; sourceTree = "<group>"; };
-		BC3620B31566311700B8F14E /* BMSocialShare.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = BMSocialShare.framework; path = ../../iOS/Binary/BMSocialShare.framework; sourceTree = "<group>"; };
 		BC8712D3146575F7007DF497 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		BC8712D5146575F7007DF497 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		BC8712D7146575F7007DF497 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
@@ -77,6 +78,9 @@
 		BCC5E4E51466D7FC00AC08F5 /* background.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = background.png; sourceTree = "<group>"; };
 		BCC5E4E61466D7FC00AC08F5 /* background@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "background@2x.png"; sourceTree = "<group>"; };
 		BCC5E4E71466D7FC00AC08F5 /* background~ipad.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "background~ipad.png"; sourceTree = "<group>"; };
+		BCE9191315EBF184006E8934 /* BMSocialShare.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = BMSocialShare.framework; sourceTree = "<group>"; };
+		BCE9191515EBF184006E8934 /* BMSocialShare.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = BMSocialShare.bundle; sourceTree = "<group>"; };
+		BCE9191615EBF184006E8934 /* FBDialog.bundle */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.plug-in"; path = FBDialog.bundle; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,7 +93,7 @@
 				BCC23B701565816100593A40 /* UIKit.framework in Frameworks */,
 				BCC23B711565816100593A40 /* Foundation.framework in Frameworks */,
 				BCC23B721565816100593A40 /* CoreGraphics.framework in Frameworks */,
-				BC3620B41566311700B8F14E /* BMSocialShare.framework in Frameworks */,
+				BCE9191715EBF184006E8934 /* BMSocialShare.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -136,7 +140,7 @@
 		BC8712D2146575F7007DF497 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				BC3620B31566311700B8F14E /* BMSocialShare.framework */,
+				BCE9191215EBF184006E8934 /* BMSocialShare.embeddedframework */,
 				BC8712F314657698007DF497 /* Twitter.framework */,
 				BC8713031465DFAB007DF497 /* MessageUI.framework */,
 				BC8712D3146575F7007DF497 /* UIKit.framework */,
@@ -186,6 +190,25 @@
 				BC9D205B1466C7A300FBC05D /* blockhaus.png */,
 			);
 			path = Graphics;
+			sourceTree = "<group>";
+		};
+		BCE9191215EBF184006E8934 /* BMSocialShare.embeddedframework */ = {
+			isa = PBXGroup;
+			children = (
+				BCE9191315EBF184006E8934 /* BMSocialShare.framework */,
+				BCE9191415EBF184006E8934 /* Resources */,
+			);
+			name = BMSocialShare.embeddedframework;
+			path = ../../iOS/Binary/BMSocialShare.embeddedframework;
+			sourceTree = "<group>";
+		};
+		BCE9191415EBF184006E8934 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				BCE9191515EBF184006E8934 /* BMSocialShare.bundle */,
+				BCE9191615EBF184006E8934 /* FBDialog.bundle */,
+			);
+			path = Resources;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -260,6 +283,8 @@
 				BC3C10171565957900E8C5E5 /* Default@2x.png in Resources */,
 				BC3C10181565958000E8C5E5 /* Default-Portrait~ipad.png in Resources */,
 				BC3620B51566320B00B8F14E /* BMViewController.xib in Resources */,
+				BCE9191815EBF184006E8934 /* BMSocialShare.bundle in Resources */,
+				BCE9191915EBF184006E8934 /* FBDialog.bundle in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,6 +367,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../iOS/Binary\"",
+					"\"$(SRCROOT)/../../iOS/Binary/BMSocialShare.embeddedframework\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ShareExample/ShareExample-Prefix.pch";
@@ -362,6 +388,7 @@
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/../../iOS/Binary\"",
+					"\"$(SRCROOT)/../../iOS/Binary/BMSocialShare.embeddedframework\"",
 				);
 				GCC_PRECOMPILE_PREFIX_HEADER = YES;
 				GCC_PREFIX_HEADER = "ShareExample/ShareExample-Prefix.pch";
