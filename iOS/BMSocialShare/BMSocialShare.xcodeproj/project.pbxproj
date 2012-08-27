@@ -7,7 +7,6 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		BC2AD31C15613B8800CF82F8 /* BMSocialShare.m in Sources */ = {isa = PBXBuildFile; fileRef = BC2AD31B15613B8800CF82F8 /* BMSocialShare.m */; };
 		BCC23B221565616A00593A40 /* FBDialog.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BC2AD2121561050900CF82F8 /* FBDialog.bundle */; };
 		BCC23B241565620900593A40 /* BMSocialShare.bundle in Resources */ = {isa = PBXBuildFile; fileRef = BCC23B231565620900593A40 /* BMSocialShare.bundle */; };
 		BCC9AFCC15616700006C8F09 /* JSON.h in Headers */ = {isa = PBXBuildFile; fileRef = BC2AD21B1561050900CF82F8 /* JSON.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -98,9 +97,6 @@
 		BC2AD22B1561050900CF82F8 /* FBLoginDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FBLoginDialog.m; path = "../facebook-ios-sdk/src/FBLoginDialog.m"; sourceTree = "<group>"; };
 		BC2AD22C1561050900CF82F8 /* FBRequest.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = FBRequest.m; path = "../facebook-ios-sdk/src/FBRequest.m"; sourceTree = "<group>"; };
 		BC2AD31515613B8800CF82F8 /* libBMSocialShare.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libBMSocialShare.a; sourceTree = BUILT_PRODUCTS_DIR; };
-		BC2AD31915613B8800CF82F8 /* BMSocialShare-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "BMSocialShare-Prefix.pch"; sourceTree = "<group>"; };
-		BC2AD31A15613B8800CF82F8 /* BMSocialShare.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BMSocialShare.h; sourceTree = "<group>"; };
-		BC2AD31B15613B8800CF82F8 /* BMSocialShare.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BMSocialShare.m; sourceTree = "<group>"; };
 		BC7F2EA914B886E400DA9B6D /* BMDialog.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = BMDialog.m; sourceTree = "<group>"; };
 		BC7F2EAA14B886E400DA9B6D /* BMDialog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BMDialog.h; sourceTree = "<group>"; };
 		BC8712BF14656E03007DF497 /* BMFacebookPost.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = BMFacebookPost.h; sourceTree = "<group>"; };
@@ -152,24 +148,6 @@
 			path = "../facebook-ios-sdk/src/JSON";
 			sourceTree = "<group>";
 		};
-		BC2AD31715613B8800CF82F8 /* BMSocialShare */ = {
-			isa = PBXGroup;
-			children = (
-				BC2AD31A15613B8800CF82F8 /* BMSocialShare.h */,
-				BC2AD31B15613B8800CF82F8 /* BMSocialShare.m */,
-				BC2AD31815613B8800CF82F8 /* Supporting Files */,
-			);
-			path = BMSocialShare;
-			sourceTree = "<group>";
-		};
-		BC2AD31815613B8800CF82F8 /* Supporting Files */ = {
-			isa = PBXGroup;
-			children = (
-				BC2AD31915613B8800CF82F8 /* BMSocialShare-Prefix.pch */,
-			);
-			name = "Supporting Files";
-			sourceTree = "<group>";
-		};
 		BC7F2EAE14B8875800DA9B6D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
@@ -183,7 +161,6 @@
 				BCD6507E146428A200D10C93 /* Facebook */,
 				BCD65063146426C800D10C93 /* BMSocialShare */,
 				BCD65064146426C800D10C93 /* Supporting Files */,
-				BC2AD31715613B8800CF82F8 /* BMSocialShare */,
 				BC7F2EAE14B8875800DA9B6D /* Frameworks */,
 				BCD65062146426C800D10C93 /* Products */,
 			);
@@ -417,7 +394,6 @@
 				BCC9B01E1561747A006C8F09 /* FBRequest.m in Sources */,
 				BCC9B01F1561747A006C8F09 /* BMFacebookPost.m in Sources */,
 				BCC9B0201561747A006C8F09 /* BMDialog.m in Sources */,
-				BC2AD31C15613B8800CF82F8 /* BMSocialShare.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
