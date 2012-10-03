@@ -593,12 +593,20 @@ typedef enum apiCall {
 ////////////////////////////////////////////////////////////////////////////////
 
 
+-(void)emailPublishText:(NSString *)text
+                 isHTML:(BOOL)isHTML
+            withSubject:(NSString *)subject
+              withImage:(NSString *)imagePath
+ inParentViewController:(UIViewController *)parentViewController {
+    [self emailPublishText:text isHTML:isHTML withSubject:subject withImage:imagePath recipients:nil inParentViewController:parentViewController];
+}
 
 
 -(void)emailPublishText:(NSString *)text
                  isHTML:(BOOL)isHTML
             withSubject:(NSString *)subject
-              withImage:(NSString *)imagePath 
+              withImage:(NSString *)imagePath
+             recipients:(NSArray *)recipients
  inParentViewController:(UIViewController *)parentViewController {
     
     
@@ -643,30 +651,42 @@ typedef enum apiCall {
             
         }
 
-/*
-        // Set up recipients
-        NSArray *toRecipients = [NSArray arrayWithObject:@"first@example.com"]; 
-        NSArray *ccRecipients = [NSArray arrayWithObjects:@"second@example.com", @"third@example.com", nil]; 
-        NSArray *bccRecipients = [NSArray arrayWithObject:@"fourth@example.com"]; 
-        
-        [picker setToRecipients:toRecipients];
-        [picker setCcRecipients:ccRecipients];	
-        [picker setBccRecipients:bccRecipients];
-*/
+        if (recipients) {
+
+            [picker setToRecipients:recipients];
+            
+            /*
+             // Set up recipients
+             NSArray *toRecipients = [NSArray arrayWithObject:@"first@example.com"];
+             NSArray *ccRecipients = [NSArray arrayWithObjects:@"second@example.com", @"third@example.com", nil];
+             NSArray *bccRecipients = [NSArray arrayWithObject:@"fourth@example.com"];
+             
+             [picker setToRecipients:toRecipients];
+             [picker setCcRecipients:ccRecipients];
+             [picker setBccRecipients:bccRecipients];
+             */
+    
+        }
 
         [parentViewController presentModalViewController:picker animated:YES];
         [picker release];
         
         
     } else {
-        
-        
+
 /*
  NSString *recipients = @"mailto:first@example.com?cc=second@example.com,third@example.com&subject=Hello from California!";
 */
         
         NSMutableString *msg = [NSMutableString stringWithString:@"mailto:"];
 
+        if (recipients) {
+            NSString *recipientsString = [recipients componentsJoinedByString:@","];
+            if (recipientsString) {
+                [msg appendFormat:@"%@&", recipientsString];
+            }
+        }
+        
         if (subject) {
             [msg appendFormat:@"subject=%@", subject];            
         }
