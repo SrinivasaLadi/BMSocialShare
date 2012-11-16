@@ -11,12 +11,6 @@
 
 
 
-#define kFacebookPostParams @"FacebookPostParams"
-
-
-
-
-
 
 @interface BMSocialShare()
 
@@ -180,12 +174,12 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// PRIVATE
-////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark - Private
 
 
--(void) showAlertWithTitle:(NSString *)title andMessage:(NSString *)message {
+
+-(void)_showAlertWithTitle:(NSString *)title andMessage:(NSString *)message {
 	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
 													message:message
 												   delegate:nil 
@@ -197,12 +191,20 @@ typedef enum apiCall {
 
 
 
+/**
+ * In case there is a post in the queue waiting to be sent.
+ */
+- (void)_dequeueUnbublishedPost {
+    BMFacebookPost *post = [BMFacebookPost postFromUserDefaults];
+    if (post) {
+        [self facebookPublish:post];
+    }
+}
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// PUBLIC
-////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark - Facebook
 
 
 
@@ -239,7 +241,7 @@ typedef enum apiCall {
  * You don't actually need to call logout if you don't REALLY want to!
  */
 - (void)facebookLogout {
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
     [_facebook logout];
 }
 
@@ -272,6 +274,7 @@ typedef enum apiCall {
  */
 - (void)facebookExtendAccessToken {
     [_facebook extendAccessTokenIfNeeded];
+    [self _dequeueUnbublishedPost];
 }
 
 
@@ -318,9 +321,7 @@ typedef enum apiCall {
     if (!_facebook.isSessionValid) {
         
         // store the last facebook post parameters before we switch to the facebook app or safari
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:post.params forKey:kFacebookPostParams];
-        [defaults synchronize];
+        [post storeToUserDefaults];
         
         [self facebookLogin];
         
@@ -332,9 +333,9 @@ typedef enum apiCall {
             
         case kPostImage:
         {
-            BMDialog *diaolog = [[BMDialog alloc] initWithFacebook:_facebook post:post delegate:self];
-            [diaolog show];
-
+            BMDialog *dialog = [[BMDialog alloc] initWithFacebook:_facebook post:post delegate:self];
+            [dialog show];
+            [dialog release];
         }
             break;
             
@@ -351,26 +352,9 @@ typedef enum apiCall {
 
 
 
-/**
- * In case the user does not want to login to Facebook or
- * somehow is cancelling the post, we need to remove the post
- * from user defaults.
- */
-- (void)deleteLastPostFromUserDefaults {
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *params = [defaults dictionaryForKey:kFacebookPostParams];
-    if (params) {
-        [defaults removeObjectForKey:kFacebookPostParams];
-    }
-    [defaults synchronize];
-    
-}
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-// FBRequestDelegate
+#pragma mark - FBRequestDelegate
 
 
 /**
@@ -415,8 +399,8 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FBDialogDelegate
+
+#pragma mark - FBDialogDelegate
 
 
 /**
@@ -424,7 +408,7 @@ typedef enum apiCall {
  */
 - (void)dialogDidComplete:(FBDialog *)dialog {
     NSLog(@"dialogDidComplete");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 
@@ -433,13 +417,13 @@ typedef enum apiCall {
  */
 - (void)dialogDidNotComplete:(FBDialog *)dialog {
     NSLog(@"dialogDidNotComplete");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FBSessionDelegate
+#pragma mark - FBSessionDelegate
+
 
 
 /**
@@ -454,13 +438,9 @@ typedef enum apiCall {
     [defaults setObject:[_facebook expirationDate] forKey:@"FBExpirationDateKey"];
     [defaults synchronize];
     
-    // is there a post that was created before we logged in?
-    NSDictionary *params = [defaults dictionaryForKey:kFacebookPostParams];
-    if (params) {
-        NSMutableDictionary *mutableParams = [NSMutableDictionary dictionaryWithDictionary:params];
-        // send it now that we are logged in!
-        [_facebook dialog:@"stream.publish" andParams:mutableParams andDelegate:self];
-    }
+    
+    [self _dequeueUnbublishedPost];
+    
     
     // let the delegate know we are logged in
     if ([_delegate respondsToSelector:@selector(facebookDidLogin)]) {
@@ -473,7 +453,7 @@ typedef enum apiCall {
  */
 - (void)fbDidNotLogin:(BOOL)cancelled {
     NSLog(@"fbDidNotLogin");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 /**
@@ -481,7 +461,7 @@ typedef enum apiCall {
  */
 - (void)fbDidLogout {
     NSLog(@"fbDidLogout");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 /**
@@ -494,7 +474,7 @@ typedef enum apiCall {
 - (void)fbSessionInvalidated {
     NSLog(@"fbSessionInvalidated");
     // TODO need to do some more research what needs to happen on this event
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 /**
@@ -509,11 +489,7 @@ typedef enum apiCall {
 }
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-// Twitter
-////////////////////////////////////////////////////////////////////////////////
-
+#pragma mark -  Twitter
 
 
 
@@ -581,16 +557,16 @@ typedef enum apiCall {
         
         
     } else {
-        [self showAlertWithTitle:@"Error" andMessage:@"Twitter is not supported on this device!"];
+        [self _showAlertWithTitle:@"Error" andMessage:@"Twitter is not supported on this device!"];
     }
 }
 
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Email
-////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark - Email
+
 
 
 -(void)emailPublishText:(NSString *)text
@@ -714,8 +690,7 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Memory Management
+#pragma mark - Memory Management
 
 
 - (void)dealloc {
