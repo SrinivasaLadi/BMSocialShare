@@ -11,24 +11,23 @@
 #import "SBJSON.h"
 
 
-
-#define kFacebookPostParams             @"BMSocialShareFacebookPostParams"
-#define kFacebookPostType               @"BMSocialShareFacebookPostType"
-#define kFacebookCachedImageFileName    @"BMSocialShareFacebookPostImage"
-
-
-
-typedef enum {
-    kPostText = 1001,
-    kPostImage = 1002
-} BMFacebookPostType;
+typedef enum facebookPostType {
+    kPostText,
+    kPostImage
+} facebookPostType;
 
 
-@interface BMFacebookPost : NSObject
-
+@interface BMFacebookPost : NSObject {
+    facebookPostType _type;
+    NSMutableDictionary *_attachment;
+    NSMutableDictionary *_media;
+    NSMutableDictionary *_properties;
+    UIImage *_image;
+    NSString *_imageName;
+}
 
 @property (nonatomic, readonly) NSMutableDictionary *params;
-@property (nonatomic, readonly) BMFacebookPostType type;
+@property (nonatomic, readonly) facebookPostType type;
 @property (nonatomic, readonly) UIImage *image;
 
 
@@ -46,15 +45,6 @@ typedef enum {
  */
 - (id)initWithImage:(UIImage *)image;
 - (void)setImageName:(NSString *)name;
-
-/**
- * If the user is not logged in yet, we need to store the current post
- * until he returns. In SSO login usually the Facebook app is opened
- * for verification. When the user returns the facebook dialog shoul reappear.
- */
-- (void)storeToUserDefaults;
-+ (BMFacebookPost *)postFromUserDefaults;
-+ (void)deleteLastPostFromUserDefaults;
 
 
 @end

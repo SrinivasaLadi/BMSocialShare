@@ -11,12 +11,6 @@
 
 
 
-#define kFacebookPostParams @"FacebookPostParams"
-
-
-
-
-
 
 @interface BMSocialShare()
 
@@ -60,6 +54,9 @@ typedef enum apiCall {
 @implementation BMSocialShare
 
 
+@synthesize facebook = _facebook;
+@synthesize delegate = _delegate;
+
 
 
 + (BMSocialShare *)sharedInstance
@@ -89,10 +86,22 @@ typedef enum apiCall {
                 NSArray *bundleURLSchemesArray = [bundleURLTypesDictionary objectForKey:@"CFBundleURLSchemes"];
                 if (bundleURLSchemesArray) {
                     for (int bundleURLSchemesArrayItem = 0; bundleURLSchemesArrayItem < bundleURLTypesArray.count && _appId == nil; bundleURLSchemesArrayItem++) {
+
                         NSString *appIdCandidate = [bundleURLSchemesArray objectAtIndex:bundleURLSchemesArrayItem];
+                        
+                        // is this a proper facebook url scheme ?
                         NSRange range = [appIdCandidate rangeOfString:@"fb"];
                         if(range.length == 2 && range.location == 0) {
-                            _appId = [appIdCandidate substringFromIndex:2];
+                            
+                            // do we have a suffix ?
+                            NSRange fbIdRange = [appIdCandidate rangeOfCharacterFromSet:[NSCharacterSet decimalDigitCharacterSet] options:NSBackwardsSearch];
+                            if (appIdCandidate.length > fbIdRange.location+1) {
+                                NSRange suffixRange = NSMakeRange(fbIdRange.location+1, appIdCandidate.length-fbIdRange.location-1);
+                                _urlSchemeSuffix = [appIdCandidate substringWithRange:suffixRange];
+                            }
+
+                            _appId = [appIdCandidate substringWithRange:NSMakeRange(2, fbIdRange.location-1)];
+                            
                             break;
                         }
                     }
@@ -100,13 +109,64 @@ typedef enum apiCall {
             }
         }
         
-        // initialize facebook with default permissions
-        if (_appId != nil) {
-            NSLog(@"BMSocialShare: Using Facebook APP ID: %@", _appId);
-            [self facebookPermissions:[NSArray arrayWithObjects: @"publish_stream", @"offline_access", nil]];
+        
+        // Check App ID:
+        // This is really a warning for the developer, this should not
+        // happen in a completed app
+        if (!_appId) {
+            
+            UIAlertView *alertView = [[UIAlertView alloc]
+                                      initWithTitle:@"Setup Error"
+                                      message:@"Missing app ID. You cannot run the app until you provide this in the code."
+                                      delegate:self
+                                      cancelButtonTitle:@"OK"
+                                      otherButtonTitles:nil,
+                                      nil];
+            [alertView show];
+            [alertView release];
+            
+            
+        } else {
+            
+            
+            // Check if the authorization callback will work
+            NSString *url;
+            if (_urlSchemeSuffix) {
+                url = [NSString stringWithFormat:@"fb%@%@://authorize", _appId, _urlSchemeSuffix];
+            } else {
+                url = [NSString stringWithFormat:@"fb%@://authorize", _appId];
+            }
+                        
+            
+            // Check if the authorization callback will work
+            BOOL bCanOpenUrl = [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:url]];
+            if (!bCanOpenUrl) {
+                
+                UIAlertView *alertView = [[UIAlertView alloc]
+                                          initWithTitle:@"Setup Error"
+                                          message:@"Invalid or missing URL scheme. You cannot run the app until you set up a valid URL scheme in your .plist."
+                                          delegate:self
+                                          cancelButtonTitle:@"OK"
+                                          otherButtonTitles:nil,
+                                          nil];
+                [alertView show];
+                [alertView release];
+                
+            } else {
+
+                // initialize facebook with default permissions
+                if (_urlSchemeSuffix) {
+                    NSLog(@"BMSocialShare: Using Facebook APP ID: %@ and URL scheme suffix: %@", _appId, _urlSchemeSuffix);
+                } else {
+                    NSLog(@"BMSocialShare: Using Facebook APP ID: %@", _appId);
+                }
+
+                [self facebookPermissions:[NSArray arrayWithObjects: @"publish_stream", nil]];
+
+            }
+            
         }
-        
-        
+
         
     }
     return self;
@@ -114,12 +174,12 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// PRIVATE
-////////////////////////////////////////////////////////////////////////////////
+
+#pragma mark - Private
 
 
--(void) showAlertWithTitle:(NSString *)title andMessage:(NSString *)message {
+
+-(void)_showAlertWithTitle:(NSString *)title andMessage:(NSString *)message {
 	UIAlertView *alert = [[UIAlertView alloc] initWithTitle:title
 													message:message
 												   delegate:nil 
@@ -131,13 +191,59 @@ typedef enum apiCall {
 
 
 
+/**
+ * In case there is a post in the queue waiting to be sent.
+ */
+- (void)_dequeueUnbublishedPost {
+    BMFacebookPost *post = [BMFacebookPost postFromUserDefaults];
+    if (post) {
+        [self facebookPublish:post];
+    }
+}
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// PUBLIC
-////////////////////////////////////////////////////////////////////////////////
 
+#pragma mark - Facebook
+
+
+
+/**
+ * Check if the facebook app is installed on the device.
+ */
+- (BOOL)isFacebookAppInstalled {
+    return [[UIApplication sharedApplication] canOpenURL:[NSURL URLWithString:@"fb://"]];
+}
+
+
+
+/**
+ * There is no need to call login if you only want to share stuff.
+ * It is enough to make a call to facebookPublish: !
+ * Login is only provided if you want to provide a button to the user to login or logout actively.
+ */
+- (void)facebookLogin {
+    
+    if (!_facebook.isSessionValid) {
+        [_facebook authorize:_permissions];
+        return;
+    }
+    
+    // let the delegate know we are logged in
+    if ([_delegate respondsToSelector:@selector(facebookDidLogin)]) {
+        [_delegate facebookDidLogin];
+    }
+
+}
+
+/**
+ * Logut from facebook.
+ * You don't actually need to call logout if you don't REALLY want to!
+ */
+- (void)facebookLogout {
+    [BMFacebookPost deleteLastPostFromUserDefaults];
+    [_facebook logout];
+}
 
 
 /**
@@ -158,6 +264,19 @@ typedef enum apiCall {
 
 
 
+/**
+ * Call from within applicationDidBecomeActive to renew our access token
+ *
+ * - (void)applicationDidBecomeActive:(UIApplication *)application {
+ *   [[BMSocialShare sharedInstance] facebookExendAccessToken];
+ * }
+ *
+ */
+- (void)facebookExtendAccessToken {
+    [_facebook extendAccessTokenIfNeeded];
+    [self _dequeueUnbublishedPost];
+}
+
 
 /**
  * Enable Facebook sharing with custom permissions.
@@ -166,7 +285,15 @@ typedef enum apiCall {
 - (void)facebookPermissions:(NSArray *)permissions {
     
     if (_facebook == nil && _appId != nil) {
-        _facebook = [[Facebook alloc] initWithAppId:_appId andDelegate:self];
+        
+        
+        if (_urlSchemeSuffix) {
+            _facebook = [[[Facebook alloc] initWithAppId:_appId urlSchemeSuffix:_urlSchemeSuffix andDelegate:self] retain];
+        } else {
+            _facebook = [[[Facebook alloc] initWithAppId:_appId andDelegate:self] retain];
+        }
+        
+        
         
         // try to load previous sessions
         NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
@@ -178,7 +305,7 @@ typedef enum apiCall {
         
     }
     
-    _permissions = permissions;
+    _permissions = [permissions retain];
     
 }
 
@@ -190,31 +317,25 @@ typedef enum apiCall {
  */
 - (void)facebookPublish:(BMFacebookPost *)post {
     
-    
-    
-#if !TARGET_IPHONE_SIMULATOR
-
+    // login to Facebook in case we have no session yet
     if (!_facebook.isSessionValid) {
         
         // store the last facebook post parameters before we switch to the facebook app or safari
-        NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-        [defaults setObject:post.params forKey:kFacebookPostParams];
-        [defaults synchronize];
+        [post storeToUserDefaults];
         
-        [_facebook authorize:_permissions];
+        [self facebookLogin];
         
         return;
     }
     
-#endif
          
     switch (post.type) {
             
         case kPostImage:
         {
-            BMDialog *diaolog = [[BMDialog alloc] initWithFacebook:_facebook post:post delegate:self];
-            [diaolog show];
-
+            BMDialog *dialog = [[BMDialog alloc] initWithFacebook:_facebook post:post delegate:self];
+            [dialog show];
+            [dialog release];
         }
             break;
             
@@ -231,26 +352,9 @@ typedef enum apiCall {
 
 
 
-/**
- * In case the user does not want to login to Facebook or
- * somehow is cancelling the post, we need to remove the post
- * from user defaults.
- */
-- (void)deleteLastPostFromUserDefaults {
-    
-    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
-    NSDictionary *params = [defaults dictionaryForKey:kFacebookPostParams];
-    if (params) {
-        [defaults removeObjectForKey:kFacebookPostParams];
-    }
-    [defaults synchronize];
-    
-}
 
 
-
-////////////////////////////////////////////////////////////////////////////////
-// FBRequestDelegate
+#pragma mark - FBRequestDelegate
 
 
 /**
@@ -295,8 +399,8 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FBDialogDelegate
+
+#pragma mark - FBDialogDelegate
 
 
 /**
@@ -304,7 +408,7 @@ typedef enum apiCall {
  */
 - (void)dialogDidComplete:(FBDialog *)dialog {
     NSLog(@"dialogDidComplete");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 
@@ -313,13 +417,13 @@ typedef enum apiCall {
  */
 - (void)dialogDidNotComplete:(FBDialog *)dialog {
     NSLog(@"dialogDidNotComplete");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// FBSessionDelegate
+#pragma mark - FBSessionDelegate
+
 
 
 /**
@@ -334,14 +438,14 @@ typedef enum apiCall {
     [defaults setObject:[_facebook expirationDate] forKey:@"FBExpirationDateKey"];
     [defaults synchronize];
     
-    // is there a post that was created before we logged in?
-    NSDictionary *params = [defaults dictionaryForKey:kFacebookPostParams];
-    if (params) {
-        NSMutableDictionary *mutableParams = [NSMutableDictionary dictionaryWithDictionary:params];
-        // send it now that we are logged in!
-        [_facebook dialog:@"stream.publish" andParams:mutableParams andDelegate:self];
-    }
     
+    [self _dequeueUnbublishedPost];
+    
+    
+    // let the delegate know we are logged in
+    if ([_delegate respondsToSelector:@selector(facebookDidLogin)]) {
+        [_delegate facebookDidLogin];
+    }
 }
 
 /**
@@ -349,7 +453,7 @@ typedef enum apiCall {
  */
 - (void)fbDidNotLogin:(BOOL)cancelled {
     NSLog(@"fbDidNotLogin");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
 }
 
 /**
@@ -357,17 +461,35 @@ typedef enum apiCall {
  */
 - (void)fbDidLogout {
     NSLog(@"fbDidLogout");
-    [self deleteLastPostFromUserDefaults];
+    [BMFacebookPost deleteLastPostFromUserDefaults];
+}
+
+/**
+ * Called when the current session has expired. This might happen when:
+ *  - the access token expired
+ *  - the app has been disabled
+ *  - the user revoked the app's permissions
+ *  - the user changed his or her password
+ */
+- (void)fbSessionInvalidated {
+    NSLog(@"fbSessionInvalidated");
+    // TODO need to do some more research what needs to happen on this event
+    [BMFacebookPost deleteLastPostFromUserDefaults];
+}
+
+/**
+ * Instead of using the "offline_access" permission it is now 
+ */
+-(void)fbDidExtendToken:(NSString *)accessToken expiresAt:(NSDate *)expiresAt {
+    NSLog(@"token extended");
+    NSUserDefaults *defaults = [NSUserDefaults standardUserDefaults];
+    [defaults setObject:accessToken forKey:@"FBAccessTokenKey"];
+    [defaults setObject:expiresAt forKey:@"FBExpirationDateKey"];
+    [defaults synchronize];
 }
 
 
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-// Twitter
-////////////////////////////////////////////////////////////////////////////////
-
+#pragma mark -  Twitter
 
 
 
@@ -435,23 +557,32 @@ typedef enum apiCall {
         
         
     } else {
-        [self showAlertWithTitle:@"Error" andMessage:@"Twitter is not supported on this device!"];
+        [self _showAlertWithTitle:@"Error" andMessage:@"Twitter is not supported on this device!"];
     }
 }
 
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Email
-////////////////////////////////////////////////////////////////////////////////
 
+#pragma mark - Email
 
 
 
 -(void)emailPublishText:(NSString *)text
+                 isHTML:(BOOL)isHTML
             withSubject:(NSString *)subject
-              withImage:(NSString *)imagePath 
+              withImage:(NSString *)imagePath
+ inParentViewController:(UIViewController *)parentViewController {
+    [self emailPublishText:text isHTML:isHTML withSubject:subject withImage:imagePath recipients:nil inParentViewController:parentViewController];
+}
+
+
+-(void)emailPublishText:(NSString *)text
+                 isHTML:(BOOL)isHTML
+            withSubject:(NSString *)subject
+              withImage:(NSString *)imagePath
+             recipients:(NSArray *)recipients
  inParentViewController:(UIViewController *)parentViewController {
     
     
@@ -482,7 +613,7 @@ typedef enum apiCall {
         }
 
         if (text) {
-            [picker setMessageBody:text isHTML:NO];
+            [picker setMessageBody:text isHTML:isHTML];
         }
         
         if (imagePath) {
@@ -496,30 +627,42 @@ typedef enum apiCall {
             
         }
 
-/*
-        // Set up recipients
-        NSArray *toRecipients = [NSArray arrayWithObject:@"first@example.com"]; 
-        NSArray *ccRecipients = [NSArray arrayWithObjects:@"second@example.com", @"third@example.com", nil]; 
-        NSArray *bccRecipients = [NSArray arrayWithObject:@"fourth@example.com"]; 
-        
-        [picker setToRecipients:toRecipients];
-        [picker setCcRecipients:ccRecipients];	
-        [picker setBccRecipients:bccRecipients];
-*/
+        if (recipients) {
+
+            [picker setToRecipients:recipients];
+            
+            /*
+             // Set up recipients
+             NSArray *toRecipients = [NSArray arrayWithObject:@"first@example.com"];
+             NSArray *ccRecipients = [NSArray arrayWithObjects:@"second@example.com", @"third@example.com", nil];
+             NSArray *bccRecipients = [NSArray arrayWithObject:@"fourth@example.com"];
+             
+             [picker setToRecipients:toRecipients];
+             [picker setCcRecipients:ccRecipients];
+             [picker setBccRecipients:bccRecipients];
+             */
+    
+        }
 
         [parentViewController presentModalViewController:picker animated:YES];
         [picker release];
         
         
     } else {
-        
-        
+
 /*
  NSString *recipients = @"mailto:first@example.com?cc=second@example.com,third@example.com&subject=Hello from California!";
 */
         
         NSMutableString *msg = [NSMutableString stringWithString:@"mailto:"];
 
+        if (recipients) {
+            NSString *recipientsString = [recipients componentsJoinedByString:@","];
+            if (recipientsString) {
+                [msg appendFormat:@"%@&", recipientsString];
+            }
+        }
+        
         if (subject) {
             [msg appendFormat:@"subject=%@", subject];            
         }
@@ -547,8 +690,7 @@ typedef enum apiCall {
 
 
 
-////////////////////////////////////////////////////////////////////////////////
-// Memory Management
+#pragma mark - Memory Management
 
 
 - (void)dealloc {

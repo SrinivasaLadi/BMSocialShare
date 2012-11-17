@@ -35,7 +35,6 @@
     int _currentAPICall;
     Facebook *_facebook;
     NSString *_appId;
-    NSString *_urlSchemeSuffix;
     NSArray *_permissions;
     UIViewController *_emailParentViewController;
 }
@@ -53,7 +52,6 @@
 - (BOOL)facebookHandleOpenURL:(NSURL *)url;
 - (void)facebookPublish:(BMFacebookPost *)post;
 - (void)facebookExtendAccessToken;
-- (BOOL)isFacebookAppInstalled;
 
 
 /* Twitter */
@@ -67,14 +65,7 @@
 -(void)emailPublishText:(NSString *)text
                  isHTML:(BOOL)isHTML
             withSubject:(NSString *)subject
-              withImage:(NSString *)imagePath
- inParentViewController:(UIViewController *)parentViewController;
-
--(void)emailPublishText:(NSString *)text
-                 isHTML:(BOOL)isHTML
-            withSubject:(NSString *)subject
-              withImage:(NSString *)imagePath
-             recipients:(NSArray *)recipients
+              withImage:(NSString *)imagePath 
  inParentViewController:(UIViewController *)parentViewController;
 
 
