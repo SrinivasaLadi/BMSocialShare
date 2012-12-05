@@ -222,6 +222,7 @@
             if (cachedImageFilePath) {
                 UIImage *image = [UIImage imageWithContentsOfFile:cachedImageFilePath];
                 if (image) {
+                    [defaults setInteger:0 forKey:kFacebookPostType];
                     BMFacebookPost *post = [[BMFacebookPost alloc] initWithImage:image];
                     return post;
                 }
@@ -238,6 +239,7 @@
                 BMFacebookPost *post = [[BMFacebookPost alloc] _initWithParams:[NSMutableDictionary dictionaryWithDictionary:params]];
                 return post;
             }
+            
         }
             break;
 
