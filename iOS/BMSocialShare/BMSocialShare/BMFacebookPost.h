@@ -20,7 +20,8 @@
 
 typedef enum {
     kPostText = 1001,
-    kPostImage = 1002
+    kPostImage = 1002,
+    kPostImageNoDialog = 1003
 } BMFacebookPostType;
 
 
@@ -28,7 +29,7 @@ typedef enum {
 
 
 @property (nonatomic, readonly) NSMutableDictionary *params;
-@property (nonatomic, readonly) BMFacebookPostType type;
+@property (nonatomic, readwrite) BMFacebookPostType type;
 @property (nonatomic, readonly) UIImage *image;
 
 
@@ -45,6 +46,7 @@ typedef enum {
  * class with an image.
  */
 - (id)initWithImage:(UIImage *)image;
+- (id)initWithImageNoDialog:(UIImage *)image withText:(NSString *)text;
 - (void)setImageName:(NSString *)name;
 
 /**

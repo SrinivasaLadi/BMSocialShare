@@ -104,6 +104,15 @@
     return self;
 }
 
+- (id)initWithImageNoDialog:(UIImage *)image withText:(NSString *)text {
+    if (self = [super init]) {
+        _type = kPostImageNoDialog;
+        _image = image;
+        _imageName = text;
+    }
+    return self;
+}
+
 
 - (void)setImageName:(NSString *)name {
     _imageName = name;
@@ -151,6 +160,11 @@
     }
     
     switch (_type) {
+        
+        case kPostImageNoDialog:
+        {
+            return [self _imageParams];
+        }
             
         case kPostImage:
         {

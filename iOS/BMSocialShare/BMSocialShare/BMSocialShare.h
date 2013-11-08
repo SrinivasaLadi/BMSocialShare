@@ -52,11 +52,13 @@
 - (void)facebookLogout;
 - (BOOL)facebookHandleOpenURL:(NSURL *)url;
 - (void)facebookPublish:(BMFacebookPost *)post;
+- (void)facebookRequestUser;
 - (void)facebookExtendAccessToken;
 - (BOOL)isFacebookAppInstalled;
 
 
 /* Twitter */
+- (BOOL)isTwitterInstalled;
 - (void)twitterPublishText:(NSString *)text 
                  withImage:(UIImage *)image 
                     andURL:(NSURL *)url 
@@ -64,6 +66,7 @@
 
 
 /* Email */
+-(BOOL)isEmailInstalled;
 -(void)emailPublishText:(NSString *)text
                  isHTML:(BOOL)isHTML
             withSubject:(NSString *)subject
