@@ -8,7 +8,7 @@
 //
 
 #import "BMSocialShare.h"
-#import "CallToPlatform.h"
+
 
 
 
@@ -233,9 +233,6 @@ typedef enum apiCall {
     if ([_delegate respondsToSelector:@selector(facebookDidLogin)]) {
         [_delegate facebookDidLogin];
     }
-    
-    //save user Data
-    [self facebookRequestUser];
 
 }
 
@@ -334,14 +331,6 @@ typedef enum apiCall {
          
     switch (post.type) {
             
-        case kPostImageNoDialog:
-        {
-            [_facebook requestWithGraphPath:@"me/photos"
-                                  andParams:post.params
-                              andHttpMethod:@"POST"
-                                andDelegate:self];
-        }
-            break;
         case kPostImage:
         {
             BMDialog *dialog = [[BMDialog alloc] initWithFacebook:_facebook post:post delegate:self];
@@ -361,9 +350,7 @@ typedef enum apiCall {
 
 }
 
-- (void)facebookRequestUser {
-    [_facebook requestWithGraphPath:@"me" andDelegate:self];
-}
+
 
 
 
@@ -384,33 +371,13 @@ typedef enum apiCall {
         result = [result objectAtIndex:0];
     }
     
-    //NSLog(@"RESULT:%@ %@",[request url], result);
-    /*
+    NSLog(@"RESULT: %@", result);
+    
     NSString *photoId = [result objectForKey:@"id"];
     if (photoId) {
         NSLog(@"Uploaded Photo with ID: %@", photoId);        
-        //[_facebook requestWithGraphPath:photoId andDelegate:self];
+        [_facebook requestWithGraphPath:photoId andDelegate:self];
     }
-    */
-    
-    NSError *error;
-    NSData *jsonData = [NSJSONSerialization dataWithJSONObject:result
-                                                       options:NSJSONWritingPrettyPrinted // Pass 0 if you don't care about the readability of the generated string
-                                                         error:&error];
-    
-    if (! jsonData) {
-        NSLog(@"Got an error: %@", error);
-    } else {
-        NSString *jsonString = [[NSString alloc] initWithData:jsonData encoding:NSUTF8StringEncoding];
-        
-        
-        const char *url = [[request url] UTF8String];
-        const char *text = [jsonString UTF8String];
-        
-        cocos2d::CallToPlatform::sharedCall()->didRecieveGraphResult(url, text);
-    }
-    
-    
     
 /*
     if ([result objectForKey:@"id"]) {
@@ -474,15 +441,11 @@ typedef enum apiCall {
     
     [self _dequeueUnbublishedPost];
     
+    
     // let the delegate know we are logged in
     if ([_delegate respondsToSelector:@selector(facebookDidLogin)]) {
         [_delegate facebookDidLogin];
     }
-    
-    // save user data
-    
-    [self facebookRequestUser];
-
 }
 
 /**
@@ -528,25 +491,7 @@ typedef enum apiCall {
 
 #pragma mark -  Twitter
 
--(BOOL) isTwitterInstalled {
-    
 
-    Class tweetComposer = NSClassFromString(@"TWTweetComposeViewController");
-    
-    if( tweetComposer != nil ) {
-        
-        if([TWTweetComposeViewController canSendTweet] ) {
-            return true;
-        } else {
-            // The user has no account setup
-            return false;
-        }
-    }
-    else {
-        // no Twitter integration
-        return false;
-    }
-}
 
 /**
  * Send a tweet. Add an image and/or URL, otherwise set them nil.
@@ -586,9 +531,6 @@ typedef enum apiCall {
                 
                 
         [tweetViewController setCompletionHandler:^(TWTweetComposeViewControllerResult result) {
-            
-            
-            
 /*
             NSString *output;
             
@@ -608,8 +550,6 @@ typedef enum apiCall {
 */
             // Dismiss the tweet composition view controller.
             [parentViewController dismissModalViewControllerAnimated:YES];
-            
-            [self performSelector:@selector(didSendPerTwitter) withObject:nil afterDelay:0.5];
         }];
         
         // Present the tweet composition view controller modally.
@@ -621,23 +561,14 @@ typedef enum apiCall {
     }
 }
 
--(void)didSendPerTwitter {
-    cocos2d::CallToPlatform::sharedCall()->didSendPerTwitter(true);
-}
-
 
 
 
 
 #pragma mark - Email
 
--(BOOL)isEmailInstalled {
-    if ([MFMailComposeViewController canSendMail]) {
-        return true;
-    } else {
-        return false;
-    }
-}
+
+
 -(void)emailPublishText:(NSString *)text
                  isHTML:(BOOL)isHTML
             withSubject:(NSString *)subject
@@ -752,14 +683,8 @@ typedef enum apiCall {
 
 // Dismisses the email composition interface when users tap Cancel or Send. Proceeds to update the message field with the result of the operation.
 - (void)mailComposeController:(MFMailComposeViewController*)controller didFinishWithResult:(MFMailComposeResult)result error:(NSError*)error 
-{
+{	
 	[_emailParentViewController dismissModalViewControllerAnimated:YES];
-    [self performSelector:@selector(didSendPerEmail) withObject:nil afterDelay:0.5];
-    
-}
-
--(void)didSendPerEmail {
-    cocos2d::CallToPlatform::sharedCall()->didSendPerEmail(true);
 }
 
 
